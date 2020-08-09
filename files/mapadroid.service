@@ -1,0 +1,15 @@
+[Unit]
+Description=MapADroid
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=mapadroid
+Group=pogomapping
+Type=simple
+WorkingDirectory=/opt/mapadroid
+ExecStart=/home/mapadroid/venv/mad_env/bin/python3 /opt/mapadroid/start.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

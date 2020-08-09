@@ -1,0 +1,6 @@
+---
+- name: Start MapADroid
+  systemd:
+    name: mapadroid
+    state: started
+    enabled: yes

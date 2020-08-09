@@ -1,0 +1,3 @@
+---
+# defaults file for mapadroid
+mapadroid_ansible_ver: "0.0.1"

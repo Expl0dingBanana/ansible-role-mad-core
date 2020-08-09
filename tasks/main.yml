@@ -1,0 +1,91 @@
+---
+# tasks file for mapadroid
+- name: Install Py3 VEnv
+  apt:
+    name: python-virtualenv
+    state: present
+    update_cache: yes
+- name: "Check for venv folder"
+  stat: path=/home/mapadroid/venv/mad_env
+  register: exists_venv_mad
+- name: Install MapADroid Virtual Envrionment
+  become: yes
+  become_user: mapadroid
+  shell: virtualenv -p python3 /home/mapadroid/venv/mad_env
+  when: not exists_venv_mad.stat.exists
+- name: Install required packages
+  apt:
+    pkg:
+    - tesseract-ocr
+    - python3-opencv
+    - git
+    - libmariadbclient-dev
+    - gcc
+    - python3-dev
+- name: Check for MAD
+  stat: path=/opt/mapadroid
+  register: exists_mad
+- name: Clone Map'A'Droid Repo
+  git:
+    repo: https://github.com/Map-A-Droid/MAD.git
+    dest: /opt/mapadroid
+  when: not exists_mad.stat.exists
+- name: Set MAD Permissions
+  file:
+    path: /opt/mapadroid
+    state: directory
+    owner: mapadroid
+    group: pogomapping
+    recurse: yes
+- name: Install Python Requirements
+  become: yes
+  become_user: mapadroid
+  pip:
+    requirements: /opt/mapadroid/requirements.txt
+    executable: /home/mapadroid/venv/mad_env/bin/pip3
+- name: Install ORTools
+  become: yes
+  become_user: mapadroid
+  pip:
+    executable: /home/mapadroid/venv/mad_env/bin/pip3
+    name: ortools
+- name: Setup basic configuration file
+  template:
+    src: config.ini
+    dest: /opt/mapadroid/configs/config.ini
+    owner: mapadroid
+    group: pogomapping
+    mode: 0644
+- name: Create MAD database
+  mysql_db:
+    name: "{{ mad_db }}"
+    state: present
+- name: Create database user
+  mysql_user:
+    name: "{{ mariadb_user }}"
+    password: "{{ mariadb_user_pwd }}"
+    priv: '{{ mad_db }}.*:ALL'
+    state: present
+- name: Create service file
+  copy:
+    src: mapadroid.service
+    dest: /etc/systemd/system
+    owner: root
+    group: root
+  notify:
+    - Start MapADroid
+- name: Allow MADmin through UFW
+  ufw:
+    rule: allow
+    port: "{{ madmin_port }}"
+    proto: tcp
+- name: Allow RGC through UFW
+  ufw:
+    rule: allow
+    port: "{{ ws_port }}"
+    proto: tcp
+- name: Allow MITM through UFW
+  ufw:
+    rule: allow
+    port: "{{ mitmreceiver_port }}"
+    proto: tcp
