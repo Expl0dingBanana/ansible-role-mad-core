@@ -51,8 +51,8 @@
     name: ortools
 - name: Setup basic configuration file
   template:
-    src: config.ini
-    dest: /opt/mapadroid/configs/config.ini.j2
+    src: config.ini.j2
+    dest: /opt/mapadroid/configs/config.ini
     owner: mapadroid
     group: pogomapping
     mode: 0644
