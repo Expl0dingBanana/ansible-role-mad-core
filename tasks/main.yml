@@ -52,7 +52,7 @@
 - name: Setup basic configuration file
   template:
     src: config.ini
-    dest: /opt/mapadroid/configs/config.ini
+    dest: /opt/mapadroid/configs/config.ini.j2
     owner: mapadroid
     group: pogomapping
     mode: 0644
